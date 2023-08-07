@@ -1,0 +1,168 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include<sstream>
+
+using namespace std;
+
+// Stock class to store information about each stock
+class Stock {
+public:
+    string name;
+    int qty;
+    double rate;
+    Stock(string n="", int q=0, double r=0.0) : name(n), qty(q), rate(r) {}
+};
+
+// Transaction class to store information about each transaction
+class Transaction {
+public:
+    string id;
+    string stockName;
+    int qty;
+    double rate;
+    double amount;
+    string type;
+    Transaction(string i="", string n="", int q=0, double r=0.0, double a=0.0, string t="") :
+        id(i), stockName(n), qty(q), rate(r), amount(a), type(t) {}
+};
+
+// Function to read stock data from file and store it in a vector
+// Function to read stock data from file and store it in a vector
+vector<Stock> readStockData(string filename) {
+    vector<Stock> stockList;
+    ifstream inputFile(filename);
+    if (inputFile.is_open()) {
+        string line;
+        while (getline(inputFile, line)) {
+            string namee;
+            int qtyy;
+            stringstream ss(line);
+            ss >> namee >> qtyy;
+            Stock stock = {namee, qtyy,};
+            stockList.push_back(stock);
+        }
+        inputFile.close();
+    } else {
+        cout << "Error opening file " << filename << endl;
+    }
+    return stockList;
+}
+void displayStockData(vector<Stock> stockList) {
+    cout << "Stock Name\tQuantity\t\n";
+    for (Stock stock : stockList) {
+        cout << stock.name << "\t\t" << stock.qty <<"Available"<< "\t\t" << endl;
+    }
+}
+
+// Function to update stock data after a purchase or sale
+void updateStockData(vector<Stock>& stockList, string stockName, int qty, char operation) {
+    for (Stock& stock : stockList) {
+        if (stock.name == stockName) {
+            if (operation == 'P') {
+                stock.qty += qty;
+            stock.rate = (stock.qty+qty);
+            } else if (operation == 'S') {
+                stock.qty -= qty;
+            }
+            break;
+        }
+    }
+}
+
+// Function to add a new transaction and store it in a file
+void addTransaction(vector<Transaction>& transactions) {
+    string id, stockName, type;
+    int qty;
+    double rate, amount;
+    cout << "Enter client ID: ";
+    cin >> id;
+    cout << "Enter stock name: ";
+    cin >> stockName;
+    cout << "Enter quantity: ";
+    cin >> qty;
+    cout << "Enter rate: ";
+//ing reading the inputs
+cin >> rate;
+amount = qty * rate;
+cout << "Enter type of transaction (buy/sell): ";
+cin >> type;
+transactions.push_back(Transaction(id, stockName, qty, rate, amount, type));
+ofstream fout("transactions.txt", ios::app);
+if (!fout) {
+cout << "Error: could not open transactions.txt" << endl;
+return;
+}
+fout << id << " " << stockName << " " << qty << " " << rate << " " << amount << " " << type << endl;
+fout.close();
+}
+
+// Function to search for transactions based on client ID
+void searchTransaction(vector<Transaction>& transactions) {
+string id;
+cout << "Enter client ID: ";
+cin >> id;
+bool found = false;
+for (Transaction t : transactions) {
+if (t.id == id) {
+cout << t.id << " " << t.stockName << " " << t.qty << " " << t.rate << " " << t.amount << " " << t.type << endl;
+found = true;
+}
+}
+if (!found) {
+cout << "No transactions found for client ID " << id << endl;
+}
+}
+
+// Function to edit an existing transaction
+void editTransaction(vector<Transaction>& transactions) {
+    string id;
+    cout << "Enter client ID: ";
+    cin >> id;
+    bool found = false;
+    for (Transaction& t : transactions) {
+        if (t.id == id) {
+            int choice;
+            cout << "Select transaction to edit: " << endl;
+            cout << "1. Stock name" << endl;
+            cout << "2. Quantity" << endl;
+            cout << "3. Rate" << endl;
+            cout << "4. Type" << endl;
+            cin >> choice;
+            switch (choice) {
+                case 1:
+                    cout << "Enter new stock name: ";
+                    cin >> t.stockName;
+                    break;
+                case 2:
+                    cout << "Enter new quantity: ";
+                    cin >> t.qty;
+                    t.amount = t.qty * t.rate;
+                    break;
+                case 3:
+                    cout << "Enter new rate: ";
+                    cin >> t.rate;
+                    t.amount = t.qty * t.rate;
+                    break;
+                case 4:
+                    cout << "Enter new type (buy/sell): ";
+                    cin >> t.type;
+                    break;
+                default:
+                    cout << "Invalid choice" << endl;
+                    break;
+            }
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        cout << "No transactions found for client ID " << id << endl;
+    } else {
+        ofstream fout("transactions.txt");
+        if (!fout) {
+            cout << "Error: could not open transactions.txt" << endl;
+            return;
+        }
+        // Loop through each tra
